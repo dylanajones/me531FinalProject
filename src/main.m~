@@ -49,7 +49,14 @@ function main(export, skip)
     
     %%% Section 2: Generating movie for the controlled glider
     
-    for i = 
+    glider_state = zeros(60,
+    
+    % Number of steps to simpulate
+    for i = 1:60
+        [b1, b2] = get_control_forces(state, desired, K)
+        time_len = [0 1]
+        init_cond
+    end
 end
 
 % Create animation elements, and return a vector of their handles

@@ -37,8 +37,8 @@ function main(export, skip)
     frame_gen_function = @(frame_info, tau) uncontrolled_glider(xyt_pos, frame_info, tau);
     
     % Declare timing
-	timing.duration = 10; % three second animation
-	timing.fps = 15;     % create frames for 15 fps animation
+	timing.duration = 10; % seconds
+	timing.fps = 15;     % fps
 	timing.pacing = @(y) softspace(0,1,y); % Use a soft start and end, using the included softstart function
 
     destination = 'uncontrolled_glider';
@@ -48,10 +48,25 @@ function main(export, skip)
 		= animation(frame_gen_function,frame_info,timing,destination,export(1),skip(1));
     
     %%% Section 2: Generating movie for the controlled glider
+    num_steps = 60;
+    init_cond = [-pi/4;0;0;1;0;1];
+    desired_state = [];
+    
+    K = [];
+    
+    glider_state = zeros(num_steps+1,6);
+    glider_state(1,:) = init_cond;
     
     % Number of steps to simpulate
-    for i = 1:60
-        [b1, b2] = get_control_forces(state, K)
+    for i = 1:num_steps
+        %TODO - Convert 6 state to 4 state
+        %TODO - Add in observer loop here
+        state = [];
+        [b1, b2] = get_control_forces(state, desired_state, K);
+        time_len = [0 1];
+        start_cond = glider_state(i,:);
+        [t,y] = ode45(@(t,y) state_ode_model(t,y,b1,b2),time_len,start_cond);
+        glider_state(i+1,:) = y(end,:);
     end
 end
 
