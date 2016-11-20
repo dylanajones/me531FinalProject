@@ -1,0 +1,96 @@
+% Script to run ODE model
+
+function main(export, skip)
+    
+    % Default so that we dont skip or export if we dont want to 
+    if nargin < 2
+		
+		skip = [0 0];
+		
+		if nargin < 1
+			
+			export = [0 0];
+			
+		end
+		
+    end
+    
+    % Create animation elements, and store them in the frame_info structure
+	frame_info = animation_demo_create_elements; %setup function, defined below in file
+    
+    %%% Section 1: Generating the movie for the uncontrolled glider
+    
+    % y is the state out, [0, 20] is the time interval, and the final argument
+    % is the intial starting state
+    b1 = 0;
+    b2 = 0;
+
+    time_len = [0 60];
+    % state = [theta, theta_dot, y, y_dot, x, x_dot]
+    init_cond = [-pi/4;0;0;1;0;1];
+
+    [t,y] = ode45(@(t,y) state_ode_model(t,y,b1,b2),time_len,init_cond);
+    
+    xyt_pos = [y(:,5), -y(:,3), y(:,1)];
+    
+    % Movie: uncontrolled glider moving
+    frame_gen_function = @(frame_info, tau) uncontrolled_glider(xyt_pos, frame_info, tau);
+    
+    % Declare timing
+	timing.duration = 10; % three second animation
+	timing.fps = 15;     % create frames for 15 fps animation
+	timing.pacing = @(y) softspace(0,1,y); % Use a soft start and end, using the included softstart function
+
+    destination = 'uncontrolled_glider';
+    
+    % Animate the movie
+	[frame_info, endframe]...
+		= animation(frame_gen_function,frame_info,timing,destination,export(1),skip(1));
+    
+    %%% Section 2: Generating movie for the controlled glider
+    
+    % Number of steps to simpulate
+    for i = 1:60
+        [b1, b2] = get_control_forces(state, K)
+    end
+end
+
+% Create animation elements, and return a vector of their handles
+function h = animation_demo_create_elements
+
+	h.f = figure(17);                            % Designate a figure for this animation
+	clf(h.f)                                     % Clear this figure
+	set(h.f,'color','w','InvertHardCopy','off')  % Set this figure to have a white background
+												 %  and to maintain color
+												 %  settings during printing
+
+	h.ax = axes('Parent',h.f);                   % Create axes for the plot
+	set(h.ax,'Xlim',[0 40],'Ylim',[-15 3]);   % Set the range of the plot
+	set(h.ax,'Xtick',0:4:40,'YTick',-15:2:3);   % Set the tick locations
+	set(h.ax,'FontSize',20);                       % Set the axis font size
+	xlabel(h.ax, 'x (m)')							 % Label the axes
+	ylabel(h.ax, 'y (m)')
+	set(h.ax,'Box','on')						 % put box all the way around the axes
+
+
+	% Line element to be used to draw the path
+	h.line1 = line(0,0,'Color',[235 14 30]/255,'linewidth',5,'Parent',h.ax);
+    h.line2 = line(0,0,'Color',[0 0 255]/255,'linewidth',5,'Parent',h.ax);
+
+end
+
+function frame_info = uncontrolled_glider(data, frame_info, tau)
+    
+    x = data(1:round(tau*length(data(:,1))),1);
+    y = data(1:round(tau*length(data(:,1))),2);
+    
+    set(frame_info.line1,'XData',x,'YData',y)
+    
+    if ~isempty(x)
+        ellipse = get_ellipse(x(end),y(end),data(end,3));
+        set(frame_info.line2,'XData',ellipse(:,1),'YData',ellipse(:,2))
+    end
+    
+    frame_info.printmethod = @(dest) print(frame_info.f,'-dpng','-r 150','-painters',dest);
+    
+end
