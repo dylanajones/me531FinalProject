@@ -34,7 +34,8 @@ Tinv = inv(T);
 Abar = T*A*Tinv;
 
 
-
+p = [-1 -2 -3 -4];
+K = place(A,B,p);
 
 
 
