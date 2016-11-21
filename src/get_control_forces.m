@@ -2,10 +2,10 @@
 
 function [b1, b2] = get_control_forces(state, desired, K)
     
-    xOff = desired - state;
+    xOff = desired' - state';
     
     F = K * xOff;
-
-    b1 = 0;
-    b2 = 0;
+    
+    b1 = F(1);
+    b2 = F(2);
 end

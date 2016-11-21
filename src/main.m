@@ -25,9 +25,9 @@ function main(export, skip)
     b1 = 0;
     b2 = 0;
 
-    time_len = [0 60];
+    time_len = [0:.1:60];
     % state = [theta, theta_dot, y, y_dot, x, x_dot]
-    init_cond = [-pi/4;0;0;1;0;1];
+    init_cond = [-pi/4,0,0,1,0,1];
 
     [t,y] = ode45(@(t,y) state_ode_model(t,y,b1,b2),time_len,init_cond);
     
@@ -48,25 +48,29 @@ function main(export, skip)
 		= animation(frame_gen_function,frame_info,timing,destination,export(1),skip(1));
     
     %%% Section 2: Generating movie for the controlled glider
-    num_steps = 60;
-    init_cond = [-pi/4;0;0;1;0;1];
-    desired_state = [];
+    num_steps = 1200;
+    init_cond = [-pi/4,0,0,1,0,1];
+    desired_state = [1, 1, 0, -pi/4];
+    y = init_cond;
     
-    K = [];
+    K = get_K();
     
-    glider_state = zeros(num_steps+1,6);
-    glider_state(1,:) = init_cond;
+    glider_state = zeros(num_steps+1,8);
+    glider_state(1,1:6) = init_cond;
     
     % Number of steps to simpulate
     for i = 1:num_steps
-        %TODO - Convert 6 state to 4 state
         %TODO - Add in observer loop here
-        state = [];
+        display(i)
+        state = [y(end,6), y(end,4), y(end,2), y(end,1)];
         [b1, b2] = get_control_forces(state, desired_state, K);
-        time_len = [0 1];
-        start_cond = glider_state(i,:);
+        [b1, b2] = scale_forces(b1, b2);
+        time_len = [0 .1];
+        start_cond = glider_state(i,1:6);
         [t,y] = ode45(@(t,y) state_ode_model(t,y,b1,b2),time_len,start_cond);
-        glider_state(i+1,:) = y(end,:);
+        glider_state(i+1,1:6) = y(end,:);
+        glider_state(i,7) = b1;
+        glider_state(i,8) = b2;
     end
 end
 

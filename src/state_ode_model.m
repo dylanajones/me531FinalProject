@@ -14,15 +14,15 @@ function state_acc = state_ode_model(t,state, b1, b2)
     B2 = b2;
     B0 = (m+.2)*g;
     
-    Cd = 0.4;
-    Cl = 0.4;
+    Cd = 0.5;
+    Cl = 0.5;
     
     % A = pi * r^2; %m^2
     
     l1 = .75; %m
     l2 = .75; %m
 
-    I = m / 5 * (a^2 + b^2);
+    I = (m / 5) * (a^2 + b^2);
 
     state_acc = [state(2); ... 
                  (B2 * l2 * cos(state(1)) - B1 * l1 * cos(state(2))) / I; ...
