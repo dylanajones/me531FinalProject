@@ -54,15 +54,20 @@ function main(export, skip)
     y = init_cond;
     
     K = get_K();
-    
+    L = get_L();
+
     glider_state = zeros(num_steps+1,8);
     glider_state(1,1:6) = init_cond;
+    observed_glider_state = zeros(num_steps+1,6);
     
     % Number of steps to simpulate
     for i = 1:num_steps
         %TODO - Add in observer loop here
         display(i)
         state = [y(end,6), y(end,4), y(end,2), y(end,1)];
+        
+        observed_glider_state = get_observed_state(L,desired_state,state);
+        
         [b1, b2] = get_control_forces(state, desired_state, K);
         [b1, b2] = scale_forces(b1, b2);
         time_len = [0 .1];
@@ -71,7 +76,11 @@ function main(export, skip)
         glider_state(i+1,1:6) = y(end,:);
         glider_state(i,7) = b1;
         glider_state(i,8) = b2;
+        
+        
     end
+    
+    
 end
 
 % Create animation elements, and return a vector of their handles
