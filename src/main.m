@@ -76,8 +76,7 @@ function main(export, skip)
         glider_state(i+1,1:6) = y(end,:);
         glider_state(i,7) = b1;
         glider_state(i,8) = b2;
-        
-        
+         
     end
     
     

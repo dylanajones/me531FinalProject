@@ -15,23 +15,27 @@ B = [0, 0;
      -l1/m, l2/m;
      0, 0]; 
  
-P = [B, A*B, A*A*B, A*A*A*B];
+P = [B, A*B, A*A*B, A*A*A*B]
 P = unique(P', 'rows', 'stable')';
 
-M = [P(:,1),P(:,4),P(:,2),P(:,3)];
+M = [P(:,1),P(:,3),P(:,2),P(:,4)]
+
+rank(M)
+
+[s,v,d] = svd(M)
 
 mu = 2;
 
-Minv = inv(M);
+Minv = inv(M)
 
 T = [Minv(1,:); ...
      Minv(2,:)*A; ...
      Minv(3,:); ...
-     Minv(4,:) ];
+     Minv(4,:)*A ]
  
-Tinv = inv(T);
+Tinv = inv(T)
 
-Abar = T*A*Tinv;
+Abar = T*A*Tinv
 
 
 p = [-1 -2 -3 -4];
