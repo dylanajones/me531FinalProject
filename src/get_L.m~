@@ -12,15 +12,15 @@ function L = get_L()
          0, 0, 0, 0;
          0, 0, 1, 0];
 
-    C = [1,0,0,0;
-        0,1,0,0;
-        0,0,0,1];
+    C = [1,0,0,0]
 
-    Q = [C;C*A];
-    rank(Q)
+
     
-    p = [-0.3 -.6 -8 -10]; % Desired pole placement
-    L = place(A',C',p)' % using MATLAB place function to get L
+    Q = [C;C*A];
+    rank(Q);
+    
+    p = [-0.3 -.6 -15 -14]; % Desired pole placement
+    L = place(A',C',p) % using MATLAB place function to get K
     eig(A-L*C)
      
 
