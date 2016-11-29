@@ -67,7 +67,7 @@ function main(export, skip)
 
     C = [1,0,0,0;
         0,1,0,0;
-        0,0,0,1];
+        0,0,1,0];
     
     K = get_K();
     L = get_L();
@@ -77,11 +77,11 @@ function main(export, skip)
     
     % Number of steps to simpulate
     for i = 1:num_steps
-        %TODO - Add in observer loop here
+       
         %display(i)
         state = [y(end,6), y(end,4), y(end,2), y(end,1)];
         pred_state = controller_observer_state( state,C,A,L)';
-        
+        err = state-pred_state;
         [b1, b2] = get_control_forces(pred_state, desired_state, K);
         [b1, b2] = scale_forces(b1, b2);
         time_len = [0 .1];

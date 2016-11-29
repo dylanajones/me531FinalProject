@@ -11,18 +11,31 @@ function L = get_L()
          -Cl/(2*m), -(Cl/2 + Cd)/m, 0, Cl/m;
          0, 0, 0, 0;
          0, 0, 1, 0];
-
-    C = [1,0,0,0]
-
-
-    
-    Q = [C;C*A];
-    rank(Q);
-    
-    p = [-0.3 -.6 -15 -14]; % Desired pole placement
-    L = place(A',C',p) % using MATLAB place function to get K
-    eig(A-L*C)
      
+     B = [0, 0;
+         1/m, 1/m;
+         -l1/m, l2/m;
+         0, 0];
+
+    C = [1,0,0,0;
+        0,1,0,0;
+        0,0,0,1];
+
+    Q = [C;C*A];
+    rank(Q)
+    
+    p = [-.3 -6 -15 -10]; % Desired pole placement
+    L = place(A',C',p)' % using MATLAB place function to get L
+    eig(A-L*C)
+   
+     
+    p = [-0.1 -0.2 -5 -3]; % Desired pole placement
+    K = place(A,B,p); % using MATLAB place function to get K
+    eig(A-B*K)
+    hold
+   
+    
+    
 
 end
 
