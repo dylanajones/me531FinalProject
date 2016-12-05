@@ -12,7 +12,7 @@ function  observed_state = get_observed_state( L,desired_state,actual_state )
 
     C = [1,0,0,0;
         0,1,0,0;
-        0,0,0,1];
+        0,0,1,0];
     
     observed_state = (A-L*C)*(desired_state-actual_state)';
      

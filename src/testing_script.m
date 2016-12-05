@@ -1,10 +1,10 @@
 % Script for testing ...
 
 clear
-close all
+%close all
 clc
 
-num_steps = 10 * 60 * 100; %10 steps in one second
+num_steps = 10 * 60 * 20; %10 steps in one second
 init_cond = [-pi/4,0,0,1,0,1];
 desired_state = [1, 1, 0, -pi/4];
 y = init_cond;
@@ -29,6 +29,7 @@ for i = 1:num_steps
     glider_state(i,8) = b2;
 end
 
+figure()
 plot(glider_state(:,4))
 figure()
 plot(glider_state(:,6))

@@ -16,43 +16,45 @@ function main(export, skip)
     end
     
     % Create animation elements, and store them in the frame_info structure
-	frame_info = uncontrolled_glider_create_elements; %setup function, defined below in file
+% 	frame_info = uncontrolled_glider_create_elements; %setup function, defined below in file
     
     %%% Section 1: Generating the movie for the uncontrolled glider
     
     % y is the state out, [0, 20] is the time interval, and the final argument
     % is the intial starting state
-    b1 = 0;
-    b2 = 0;
-
-    time_len = [0:.1:60];
-    % state = [theta, theta_dot, y, y_dot, x, x_dot]
-    init_cond = [-pi/4,0,0,1,0,1];
-
-    [t,y] = ode45(@(t,y) state_ode_model(t,y,b1,b2),time_len,init_cond);
-    
-    xyt_pos = [y(:,5), -y(:,3), y(:,1)];
-    
-    % Movie: uncontrolled glider moving
-    frame_gen_function = @(frame_info, tau) uncontrolled_glider(xyt_pos, frame_info, tau);
-    
-    % Declare timing
-	timing.duration = 10; % seconds
-	timing.fps = 15;     % fps
-	timing.pacing = @(y) softspace(0,1,y); % Use a soft start and end, using the included softstart function
-
-    destination = 'uncontrolled_glider';
-    
-    % Animate the movie
-	[frame_info, endframe]...
-		= animation(frame_gen_function,frame_info,timing,destination,export(1),skip(1));
+%     b1 = 0;
+%     b2 = 0;
+% 
+%     time_len = [0:.1:60];
+%     % state = [theta, theta_dot, y, y_dot, x, x_dot]
+%     init_cond = [-pi/4,0,0,1,0,1];
+% 
+%     [t,y] = ode45(@(t,y) state_ode_model(t,y,b1,b2),time_len,init_cond);
+%     
+%     xyt_pos = [y(:,5), -y(:,3), y(:,1)];
+%     
+%     % Movie: uncontrolled glider moving
+%     frame_gen_function = @(frame_info, tau) uncontrolled_glider(xyt_pos, frame_info, tau);
+%     
+%     % Declare timing
+% 	timing.duration = 10; % seconds
+% 	timing.fps = 15;     % fps
+% 	timing.pacing = @(y) softspace(0,1,y); % Use a soft start and end, using the included softstart function
+% 
+%     destination = 'uncontrolled_glider';
+%     
+%     % Animate the movie
+% 	[frame_info, endframe]...
+% 		= animation(frame_gen_function,frame_info,timing,destination,export(1),skip(1));
     
     %%% Section 2: Generating movie for the controlled glider
     
     num_steps = 10 * 60 * 2; %10 steps in one second
     init_cond = [-pi/4,0,0,1,0,1];
     desired_state = [1, 1, 0, -pi/4];
-    y = init_cond;
+    est_state = desired_state;
+    %est_state = [0, 0, 0, 0];
+    state = est_state;
     
     Cl = .5; %.4
     Cd = .5; %.4
@@ -69,20 +71,27 @@ function main(export, skip)
         0,1,0,0;
         0,0,1,0];
     
+    B = [0, 0;
+         1/m, 1/m;
+         -l1/m, l2/m;
+         0, 0];
+    
     K = get_K();
     L = get_L();
     
     glider_state = zeros(num_steps+1,8);
     glider_state(1,1:6) = init_cond;
     
+    err = zeros(num_steps,4);
+    
     % Number of steps to simpulate
     for i = 1:num_steps
        
         %display(i)
-        state = [y(end,6), y(end,4), y(end,2), y(end,1)];
-        pred_state = controller_observer_state( state,C,A,L)';
-        err = state-pred_state;
-        [b1, b2] = get_control_forces(pred_state, desired_state, K);
+%         state = [y(end,6), y(end,4), y(end,2), y(end,1)];
+%         pred_state = controller_observer_state( state,C,A,L)';
+        err(i,:) = state-est_state;        
+        [b1, b2] = get_control_forces(est_state, desired_state, K);
         [b1, b2] = scale_forces(b1, b2);
         time_len = [0 .1];
         start_cond = glider_state(i,1:6);
@@ -90,6 +99,10 @@ function main(export, skip)
         glider_state(i+1,1:6) = y(end,:);
         glider_state(i,7) = b1;
         glider_state(i,8) = b2;
+        state = [glider_state(i,6), glider_state(i,4), glider_state(i,2), glider_state(i,1)];
+        u = [b1;b2];
+        % Do observer Stuff
+        est_state = observer_state(est_state,state,L,C,A,B,u);
     end
     
     xyt_pos = [glider_state(:,5), -glider_state(:,3), glider_state(:,1)];
@@ -109,6 +122,13 @@ function main(export, skip)
     % Animate the movie
 	[frame_info, endframe]...
 		= animation(frame_gen_function,frame_info,timing,destination,export(1),skip(1));
+    
+    figure()
+    plot(err(:,1),'r');
+    hold on
+    plot(err(:,2),'b');
+    plot(err(:,3),'g');
+    plot(err(:,4),'m');
     
 end
 
@@ -153,7 +173,7 @@ function h = controlled_glider_create_elements
 	xlabel(h.ax, 'x (m)')							 % Label the axes
 	ylabel(h.ax, 'y (m)')
 	set(h.ax,'Box','on')						 % put box all the way around the axes
-    title(h.ax, 'Controlled Glider')
+    title(h.ax, 'Observer / Controller Glider')
 
 
 	% Line element to be used to draw the path

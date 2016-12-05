@@ -91,6 +91,8 @@ function main(export, skip)
     % Animate the movie
 	[frame_info, endframe]...
 		= animation(frame_gen_function,frame_info,timing,destination,export(1),skip(1));
+    save_name = 'glider_state';
+    save(save_name, 'glider_state');
     
 end
 
