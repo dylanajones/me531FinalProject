@@ -49,7 +49,7 @@ function main(export, skip)
     
     %%% Section 2: Generating movie for the controlled glider
     
-    num_steps = 10 * 60 * 2; %10 steps in one second
+    num_steps = 10 * 60 * 3; %10 steps in one second
     init_cond = [-pi/4,0,0,1,0,1];
     desired_state = [1, 1, 0, -pi/4];
     est_state = desired_state;
@@ -154,6 +154,7 @@ function h = uncontrolled_glider_create_elements
 	% Line element to be used to draw the path
 	h.line1 = line(0,0,'Color',[235 14 30]/255,'linewidth',5,'Parent',h.ax);
     h.line2 = line(0,0,'Color',[0 0 255]/255,'linewidth',5,'Parent',h.ax);
+    
 
 end
 
@@ -177,17 +178,21 @@ function h = controlled_glider_create_elements
 
 
 	% Line element to be used to draw the path
-	h.line1 = line(0,0,'Color',[235 14 30]/255,'linewidth',5,'Parent',h.ax);
-    h.line2 = line(0,0,'Color',[0 0 255]/255,'linewidth',5,'Parent',h.ax);
+	h.line3 = line(0,0,'Color',[235 14 30]/255,'linewidth',5,'Parent',h.ax);
+%     h.line2 = line(0,0,'Color',[0 0 255]/255,'linewidth',5,'Parent',h.ax);
+    h.line1 = line(0,0,'Color',[0 0 0], 'linewidth',4,'Parent',h.ax,'LineStyle','--');
 
 end
 
 function frame_info = uncontrolled_glider(data, frame_info, tau)
     
+
+    
     x = data(1:round(tau*length(data(:,1))),1);
     y = data(1:round(tau*length(data(:,1))),2);
     
     set(frame_info.line1,'XData',x,'YData',y)
+    
     
     if ~isempty(x)
         ellipse = get_ellipse(x(end),y(end),data(end,3));
@@ -200,15 +205,22 @@ end
 
 function frame_info = controlled_glider(data, frame_info, tau)
     
+    d_line_x = 0:.1:37;
+    d_line_y = -1 * d_line_x;
+    
+    d_x = d_line_x(1:round(tau*length(d_line_x)));
+    d_y = d_line_y(1:round(tau*length(d_line_y)));
+
     x = data(1:round(tau*length(data(:,1))),1);
     y = data(1:round(tau*length(data(:,1))),2);
     
-    set(frame_info.line1,'XData',x,'YData',y)
+    set(frame_info.line3,'XData',x,'YData',y)
+    set(frame_info.line1,'XData',d_x,'YData',d_y)
     
-    if ~isempty(x)
-        ellipse = get_ellipse(x(end),y(end),data(end,3));
-        set(frame_info.line2,'XData',ellipse(:,1),'YData',ellipse(:,2))
-    end
+%     if ~isempty(x)
+%         ellipse = get_ellipse(x(end),y(end),data(end,3));
+%         set(frame_info.line2,'XData',ellipse(:,1),'YData',ellipse(:,2))
+%     end
     
     frame_info.printmethod = @(dest) print(frame_info.f,'-dpng','-r 150','-painters',dest);
     
